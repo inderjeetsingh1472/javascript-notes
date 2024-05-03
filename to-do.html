@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List App</title>
+</head>
+<body>
+    <h1>To-Do List</h1>
+    <input type="text" id="taskTitle" placeholder="Enter task title">
+    <input type="text" id="taskDescription" placeholder="Enter task description">
+    <button onclick="addTask()">Add Task</button>
+    <select id="filter">
+        <option value="all">All</option>
+        <option value="completed">Completed</option>
+        <option value="incomplete">Incomplete</option>
+    </select>
+    <ul id="taskList"></ul>
+
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        function renderTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = '';
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <input type="checkbox" onchange="toggleTask(${task.id})" ${task.completed ? 'checked' : ''}>
+                    <span>${task.title}</span>
+                    <button onclick="deleteTask(${task.id})">Delete</button>
+                `;
+                taskList.appendChild(li);
+            });
+        }
+
+        function addTask() {
+            const title = document.getElementById('taskTitle').value;
+            const description = document.getElementById('taskDescription').value;
+            const task = {
+                id: Date.now(),
+                title,
+                description,
+                completed: false
+            };
+            tasks.push(task);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        function toggleTask(id) {
+            const taskIndex = tasks.findIndex(task => task.id === id);
+            tasks[taskIndex].completed = !tasks[taskIndex].completed;
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        function filterTasks() {
+            const filter = document.getElementById('filter').value;
+            let filteredTasks = tasks;
+            if (filter === 'completed') {
+                filteredTasks = tasks.filter(task => task.completed);
+            } else if (filter === 'incomplete') {
+                filteredTasks = tasks.filter(task => !task.completed);
+            }
+            renderTasks(filteredTasks);
+        }
+
+        renderTasks();
+    </script>
+</body>
+</html>
